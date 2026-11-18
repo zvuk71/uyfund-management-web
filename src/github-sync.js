@@ -40,7 +40,7 @@ export class GitHubError extends Error {
 }
 
 export class GitHubStorage {
-  constructor(token, fetchImpl = fetch, repo = GITHUB_REPO, branch = GITHUB_BRANCH) {
+  constructor(token, fetchImpl = window.fetch.bind(window), repo = GITHUB_REPO, branch = GITHUB_BRANCH) {
     if (!token || /\s/.test(token)) throw new Error('Вкажіть GitHub fine-grained token.');
     this.token = token;
     this.fetchImpl = fetchImpl;
