@@ -1,0 +1,38 @@
+name: Publish UYFund public interface (no private data)
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build public-only site
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _site/src _site/data
+          cp index.html _site/
+          cp src/app.js src/style.css src/github-sync.js _site/src/
+          cp data/seed.json _site/data/
+          touch _site/.nojekyll
+          test ! -e _site/private-data
+          test ! -e _site/recovery
+          test "$(node -e "const d=require('./data/seed.json');process.stdout.write(String(d.projects.length+d.grants.length+d.concerts.length))")" = 0
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
